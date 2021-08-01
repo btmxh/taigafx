@@ -1,0 +1,27 @@
+.sidebar {
+    -fx-background-color: #333333
+}
+
+.content-pane {
+    -fx-background-color: #1F1F1F
+}
+
+.content.tab-pane *.tab-header-background {
+    -fx-background-color: transparent;
+}
+
+.content.tab-pane .tab:selected {
+    -fx-background-color: #474747;
+}
+
+.content.tab-pane .tab {
+    -fx-background-color: #333333;
+}
+
+.content.tab-pane .tab .tab-label {
+    -fx-text-fill: white;
+}
+
+.content-tabbed-pane {
+    -fx-background-color: #474747
+}

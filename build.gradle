@@ -1,0 +1,39 @@
+plugins {
+    id 'java'
+    id 'application'
+    id "org.openjfx.javafxplugin" version "0.0.10"
+}
+
+javafx {
+    modules = [ 'javafx.controls', 'javafx.fxml' ]
+}
+
+application {
+    mainClassName = 'com.dah.taigafx.Main'
+}
+
+group 'com.dah'
+version '0.1'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0-rc1'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.13.0-rc1'
+    implementation 'com.graphql-java:graphql-java:16.2'
+
+    implementation 'com.jfoenix:jfoenix:9.0.10'
+    implementation 'org.controlsfx:controlsfx:11.1.0'
+    implementation 'de.jensd:fontawesomefx-commons:9.1.2'
+    implementation 'de.jensd:fontawesomefx-fontawesome:4.7.0-9.1.2'
+    implementation 'org.jetbrains:annotations:20.1.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+}
+
+test {
+    useJUnitPlatform()
+}
