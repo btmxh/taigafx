@@ -226,6 +226,7 @@ public class MainWindowController {
             protected void updateItem(UserAnime item, boolean empty) {
                 super.updateItem(item, empty);
                 if(item != null && !empty) {
+
                     int totalEps = item.getAnime().episodes();
                     int releasedEps = Math.min(totalEps, 3);
                     IntegerProperty watchedEps = item.episodeWatchedProperty();

@@ -37,4 +37,5 @@
 
 .user-status-buttons:hover {
     -fx-background-color: #00000022;
+    -fx-text-fill: #FFFFFF;
 }
