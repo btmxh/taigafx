@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class AniListTest {
     @Test
     public void testBokurema() throws ExecutionException, InterruptedException {
-        final int id = 114065;
+        final var id = "114065";
 
         var loader = new AniListLoader();
         var anime = loader.loadAnime(id).get();
@@ -32,7 +32,7 @@ public class AniListTest {
     // not released, no season infos
     @Test
     public void testMagirecoS3() throws ExecutionException, InterruptedException {
-        final int id = 136080;
+        final var id = "136080";
 
         var loader = new AniListLoader();
         var anime = loader.loadAnime(id).get();
@@ -43,7 +43,7 @@ public class AniListTest {
 
     @Test
     public void testFailure() {
-        final int id = 0;
+        final var id = "0";
         var loader = new AniListLoader();
         var response = loader.loadAnime(id);
         try {
@@ -59,7 +59,7 @@ public class AniListTest {
     /*
     @Test
     public void testNoInternet() {
-        final int id = 0;
+        final var id = "0";
         var loader = new AniListLoader();
         var response = loader.loadAnime(id);
         try {
@@ -74,7 +74,7 @@ public class AniListTest {
 
     @Test
     public void testTimeout() {
-        final int id = 0;
+        final var id = "0";
         var loader = new AniListLoader(Duration.ofNanos(1));
         var response = loader.loadAnime(id);
         try {

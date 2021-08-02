@@ -31,7 +31,7 @@ public class JikanLoader extends BaseAnimeLoader {
     }
 
     @Override
-    public CompletableFuture<Anime> loadAnime(int id) {
+    public CompletableFuture<Anime> loadAnime(String id) {
         var request = HttpRequest.newBuilder(URI.create("https://api.jikan.moe/v4/anime/" + id))
                 .timeout(timeout)
                 .GET()

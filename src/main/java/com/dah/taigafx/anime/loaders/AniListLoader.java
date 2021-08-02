@@ -79,7 +79,7 @@ public class AniListLoader extends BaseAnimeLoader {
     }
 
     @Override
-    public CompletableFuture<Anime> loadAnime(int id) {
+    public CompletableFuture<Anime> loadAnime(String id) {
         var request = HttpRequest.newBuilder()
                 .uri(URI.create(ANILIST_API_URL))
                 .timeout(timeout)
@@ -106,7 +106,7 @@ public class AniListLoader extends BaseAnimeLoader {
                 });
     }
 
-    private String createBodyJSONQuery(int id) {
+    private String createBodyJSONQuery(String id) {
         var node = objectMapper.createObjectNode();
         var variables = objectMapper.createObjectNode();
         node.put("query", ANILIST_QUERY_STRING);

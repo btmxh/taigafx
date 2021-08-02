@@ -26,5 +26,5 @@ public abstract class BaseAnimeLoader extends BaseLoader {
     public BaseAnimeLoader() {
     }
 
-    public abstract CompletableFuture<Anime> loadAnime(int id);
+    public abstract CompletableFuture<Anime> loadAnime(String id);
 }

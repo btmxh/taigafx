@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class JikanTest {
     @Test
     public void testBokurema() throws ExecutionException, InterruptedException {
-        final int id = 40904;
+        final var id = "40904";
 
         var loader = new JikanLoader();
         var anime = loader.loadAnime(id).get();
@@ -30,7 +30,7 @@ public class JikanTest {
     // not released, no season infos
     @Test
     public void testMagirecoS3() throws ExecutionException, InterruptedException {
-        final int id = 49291;
+        final var id = "49291";
 
         var loader = new JikanLoader();
         var anime = loader.loadAnime(id).get();
@@ -41,7 +41,7 @@ public class JikanTest {
 
     @Test
     public void testFailure() {
-        final int id = 0;
+        final var id = "0";
         var loader = new JikanLoader();
         var response = loader.loadAnime(id);
         try {
@@ -57,7 +57,7 @@ public class JikanTest {
     /*
     @Test
     public void testNoInternet() {
-        final int id = 0;
+        final var id = "0";
         var loader = new AniListLoader();
         var response = loader.loadAnime(id);
         try {
@@ -72,7 +72,7 @@ public class JikanTest {
 
     @Test
     public void testTimeout() {
-        final int id = 0;
+        final var id = "0";
         var loader = new JikanLoader(Duration.ofNanos(1));
         var response = loader.loadAnime(id);
         try {
