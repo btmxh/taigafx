@@ -25,3 +25,16 @@
 .content-tabbed-pane {
     -fx-background-color: #474747
 }
+
+.table-view .left-aligned-column.column-header .label {
+    -fx-alignment: CENTER_LEFT
+}
+
+.user-status-buttons {
+    -fx-background-color: transparent;
+    -fx-text-fill: transparent;
+}
+
+.user-status-buttons:hover {
+    -fx-background-color: #00000022;
+}
