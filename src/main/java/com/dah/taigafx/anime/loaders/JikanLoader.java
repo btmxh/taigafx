@@ -1,11 +1,13 @@
 package com.dah.taigafx.anime.loaders;
 
+import com.dah.taigafx.Json;
 import com.dah.taigafx.anime.*;
 import com.dah.taigafx.exceptions.APIRequestException;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,12 +23,15 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class JikanLoader extends BaseAnimeLoader {
+    private @NotNull ObjectMapper objectMapper;
     public JikanLoader(@NotNull Duration timeout) {
         super(timeout);
+        objectMapper = Json.getObjectMapper().copy();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     public JikanLoader() {
+        objectMapper = Json.getObjectMapper().copy();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 

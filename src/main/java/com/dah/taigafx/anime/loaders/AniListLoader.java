@@ -1,16 +1,15 @@
 package com.dah.taigafx.anime.loaders;
 
+import com.dah.taigafx.Json;
 import com.dah.taigafx.anime.*;
 import com.dah.taigafx.exceptions.APIRequestException;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
@@ -18,7 +17,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
@@ -90,7 +92,7 @@ public class AniListLoader extends BaseAnimeLoader {
         return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))
                 .thenApply(r -> {
                     try {
-                        var response = objectMapper.readValue(r.body(), AniListResponse.class);
+                        var response = Json.getObjectMapper().readValue(r.body(), AniListResponse.class);
                         if(response.errors() == null || response.errors().isEmpty()) {
                             return response.data().media().toGenericAnime();
                         } else {
@@ -107,6 +109,7 @@ public class AniListLoader extends BaseAnimeLoader {
     }
 
     private String createBodyJSONQuery(String id) {
+        var objectMapper = Json.getObjectMapper();
         var node = objectMapper.createObjectNode();
         var variables = objectMapper.createObjectNode();
         node.put("query", ANILIST_QUERY_STRING);

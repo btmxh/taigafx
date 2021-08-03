@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.List;
 
 public class ServiceConfig {
     private @NotNull final SimpleObjectProperty<@NotNull AnimeSource> metadataProvider
@@ -25,7 +26,7 @@ public class ServiceConfig {
             autoSyncPeriodically = new SimpleBooleanProperty(false);
     private @NotNull final SimpleObjectProperty<@Nullable Duration>
             autoSyncPeriod = new SimpleObjectProperty<>();
-    private @NotNull final ObservableList<@NotNull Account>
+    private @NotNull ObservableList<@NotNull Account>
             accounts = FXCollections.observableArrayList();
 
     public @NotNull AnimeSource getMetadataProvider() {
@@ -126,6 +127,11 @@ public class ServiceConfig {
 
     public @NotNull ObservableList<Account> getAccounts() {
         return accounts;
+    }
+
+    // Jackson only
+    public void setAccounts(List<Account> accounts) {
+        this.accounts = FXCollections.observableArrayList(accounts);
     }
 
     public static class Account {}

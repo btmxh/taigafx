@@ -22,9 +22,10 @@ public class UserAnime {
     private @NotNull final SimpleDoubleProperty score = new SimpleDoubleProperty(Double.NaN);
     private @NotNull String notes = ""; // "" if empty
     private @Nullable LocalDate startDate, endDate;
-    private @NotNull List<String> alternativeTitles = new ArrayList<>();
+    // specify ArrayList to make sure that Jackson will create a mutable list
+    private @NotNull ArrayList<String> alternativeTitles = new ArrayList<>();
     private @Nullable String torrentSearchName;
-    private @NotNull List<String> fansubGroupPreference = new ArrayList<>();
+    private @NotNull ArrayList<String> fansubGroupPreference = new ArrayList<>();
     private @Nullable Path torrentDownloadDirectory;
 
     // Do not use this.
@@ -104,11 +105,11 @@ public class UserAnime {
         this.endDate = endDate;
     }
 
-    public @NotNull List<String> getAlternativeTitles() {
+    public @NotNull ArrayList<String> getAlternativeTitles() {
         return alternativeTitles;
     }
 
-    public void setAlternativeTitles(@NotNull List<String> alternativeTitles) {
+    public void setAlternativeTitles(@NotNull ArrayList<String> alternativeTitles) {
         this.alternativeTitles = alternativeTitles;
     }
 
@@ -120,11 +121,11 @@ public class UserAnime {
         this.torrentSearchName = torrentSearchName;
     }
 
-    public @NotNull List<String> getFansubGroupPreference() {
+    public @NotNull ArrayList<String> getFansubGroupPreference() {
         return fansubGroupPreference;
     }
 
-    public void setFansubGroupPreference(@NotNull List<String> fansubGroupPreference) {
+    public void setFansubGroupPreference(@NotNull ArrayList<String> fansubGroupPreference) {
         this.fansubGroupPreference = fansubGroupPreference;
     }
 

@@ -1,5 +1,6 @@
 package com.dah.taigafx.anime.loaders;
 
+import com.dah.taigafx.Json;
 import com.dah.taigafx.anime.*;
 import com.dah.taigafx.exceptions.APIRequestException;
 import org.jetbrains.annotations.NotNull;
@@ -41,7 +42,7 @@ public class AodLoader extends BaseAnimeLoader {
                         | ((first8Chars[3] & 0xff))) & 1023;
                 var filename = aodExtrasPath.resolve("minidb")
                         .resolve(bucket + ".json").toAbsolutePath().toString();
-                var data = objectMapper.readValue(new File(filename), AodData.class);
+                var data = Json.getObjectMapper().readValue(new File(filename), AodData.class);
                 var result = data.data.stream()
                         .filter(a -> a.id().equals(id))
                         .findFirst();

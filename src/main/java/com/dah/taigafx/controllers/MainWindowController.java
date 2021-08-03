@@ -23,7 +23,10 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.FileChooser;
@@ -35,7 +38,6 @@ import org.controlsfx.dialog.ExceptionDialog;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -106,7 +108,7 @@ public class MainWindowController {
             filteredAnimeLists.put(status, FXCollections.observableArrayList());
         }
 
-        for (final var anime : animeList.animes()) {
+        for (final var anime : animeList.getAnimes()) {
             filteredAnimeLists.get(anime.getStatus()).add(anime);
         }
 
@@ -119,7 +121,7 @@ public class MainWindowController {
     }
 
     private void initAnimePane(@NotNull AnchorPane pane, @Nullable UserAnimeStatus status) {
-        var list = status == null ? animeList.animes() :
+        var list = status == null ? animeList.getAnimes() :
                 filteredAnimeLists.get(status);
 
         var table = new TableView<UserAnime>();
@@ -339,7 +341,7 @@ public class MainWindowController {
     }
 
     private void addAnimeToList(UserAnime anime) {
-        animeList.animes().add(anime);
+        animeList.getAnimes().add(anime);
         filteredAnimeLists.get(anime.getStatus()).add(anime);
     }
 
