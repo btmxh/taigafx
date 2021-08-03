@@ -1,0 +1,101 @@
+.anime-list-table .table-cell {
+    -fx-table-cell-border-color: #323232;
+}
+
+.anime-list-table .table-row-cell:even {
+    -fx-background-color: -fx-background;
+}
+
+.anime-list-table .table-row-cell:odd {
+    -fx-background-color: derive(-fx-background, 5%);
+}
+
+.anime-list-table .table-row-cell:odd:empty {
+    -fx-background-color: -fx-background;
+}
+
+.anime-list-table .column-header .label {
+    -fx-column-alignment: CENTER;
+    -fx-alignment: -fx-column-alignment;
+}
+
+.anime-list-table .table-column {
+    -fx-column-alignment: CENTER;
+    -fx-alignment: -fx-column-alignment;
+}
+
+.anime-list-table .anime-title-col,
+.anime-list-table .anime-title-col .label
+{
+    -fx-column-alignment: CENTER_LEFT
+}
+
+.anime-list-table .anime-season-col,
+.anime-list-table .anime-season-col .label
+{
+    -fx-column-alignment: CENTER_RIGHT;
+}
+
+.user-status-buttons {
+    -fx-background-color: transparent;
+    -fx-text-fill: transparent;
+}
+
+.user-status-buttons:hover {
+    -fx-background-color: #00000022;
+    -fx-text-fill: #FFFFFF;
+}
+
+.anime-status-display {
+    -fx-min-width: 14;
+    -fx-min-height: 14;
+    -fx-max-width: 14;
+    -fx-max-height: 14;
+    -fx-anime-status-color: transparent;
+    -fx-background-color: linear-gradient(to bottom left,
+        -fx-anime-status-color, derive(-fx-anime-status-color, -20%));
+    -fx-background-insets: 2;
+}
+
+.anime-status-display:airing {
+    -fx-anime-status-color: lime;
+}
+
+.anime-status-display:completed {
+    -fx-anime-status-color: deepskyblue;
+}
+
+.anime-status-display:unknown {
+    -fx-anime-status-color: gray;
+}
+
+.anime-status-display:cancelled {
+    -fx-anime-status-color: red;
+}
+
+.anime-status-display:hiatus {
+    -fx-anime-status-color: gold;
+}
+
+.anime-status-display:not-released {
+    -fx-anime-status-color: lightgray;
+}
+
+.status-bar-segment {
+    -fx-user-status-color: transparent;
+    -fx-background-insets: 1;
+    -fx-background-radius: 1;
+    -fx-background-color: -fx-user-status-color;
+}
+
+.status-bar-segment:watched {
+    -fx-user-status-color: hsb(120, 100%, 60%);
+}
+
+.status-bar-segment:released {
+    -fx-user-status-color: hsb(120, 40%, 50%);
+}
+
+.status-bar-segment:not-aired {
+    -fx-user-status-color: hsb(120, 0%, 30%);
+}

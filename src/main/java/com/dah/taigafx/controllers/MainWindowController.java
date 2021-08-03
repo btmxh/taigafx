@@ -12,16 +12,19 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Group;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.paint.*;
-import javafx.scene.shape.Rectangle;
+import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import org.controlsfx.control.SegmentedBar;
+import org.controlsfx.dialog.ExceptionDialog;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -74,6 +77,7 @@ public class MainWindowController {
                 filteredAnimeLists.get(status);
 
         var table = new TableView<UserAnime>();
+        table.getStyleClass().add("anime-list-table");
         table.setItems(list);
 
         var animeStatusCol = new TableColumn<UserAnime, AnimeStatus>();
@@ -84,7 +88,6 @@ public class MainWindowController {
 
         //noinspection unchecked
         table.getColumns().addAll(animeStatusCol, animeTitleCol, userStatusCol, animeTypeCol, animeSeasonCol);
-        table.getColumns().forEach(col -> col.getStyleClass().add("left-aligned-column"));
 
         animeStatusCol.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().getAnime().status()));
         animeTitleCol.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().getAnime().title()));
@@ -97,6 +100,12 @@ public class MainWindowController {
             return new ReadOnlyObjectWrapper<>(value);
         });
 
+        animeStatusCol.getStyleClass().add("anime-status-col");
+        animeTitleCol.getStyleClass().add("anime-title-col");
+        userStatusCol.getStyleClass().add("user-status-col");
+        animeTypeCol.getStyleClass().add("anime-type-col");
+        animeSeasonCol.getStyleClass().add("anime-season-col");
+
         animeStatusCol.setPrefWidth(20.0);
         animeTitleCol.setPrefWidth(630.0);
         userStatusCol.setPrefWidth(200.0);
@@ -104,26 +113,27 @@ public class MainWindowController {
         animeSeasonCol.setPrefWidth(100.0);
 
         animeStatusCol.setCellFactory(col -> new TableCell<>(){
-            private static final Map<AnimeStatus, Paint> paintMap = Map.of(
-                    AnimeStatus.AIRING, linearGradient(Color.LIME, Color.LIMEGREEN),
-                    AnimeStatus.COMPLETED, linearGradient(Color.SKYBLUE, Color.DEEPSKYBLUE),
-                    AnimeStatus.UNKNOWN, linearGradient(Color.GRAY, Color.DARKGRAY),
-                    AnimeStatus.CANCELLED, linearGradient(Color.RED, Color.web("#A00000")),
-                    AnimeStatus.HIATUS, linearGradient(Color.GOLD, Color.GOLDENROD),
-                    AnimeStatus.NOT_RELEASED, linearGradient(Color.LIGHTGRAY, Color.web("#B0B0B0"))
+            private static final Map<AnimeStatus, PseudoClass> statusPseudoClasses = Map.of(
+                    AnimeStatus.AIRING, PseudoClass.getPseudoClass("airing"),
+                    AnimeStatus.COMPLETED, PseudoClass.getPseudoClass("completed"),
+                    AnimeStatus.UNKNOWN, PseudoClass.getPseudoClass("unknown"),
+                    AnimeStatus.CANCELLED, PseudoClass.getPseudoClass("cancelled"),
+                    AnimeStatus.HIATUS, PseudoClass.getPseudoClass("hiatus"),
+                    AnimeStatus.NOT_RELEASED, PseudoClass.getPseudoClass("not-released")
             );
-            private Rectangle rect = new Rectangle(0, 0, 10, 10);
-            private static LinearGradient linearGradient(Color top, Color bottom) {
-                return new LinearGradient(0, 0, 0, 1, true,
-                        CycleMethod.NO_CYCLE, new Stop(0.0, top), new Stop(1.0, bottom));
+            private final Region rect = new Region();
+            {
+                rect.setBackground(new Background(new BackgroundFill(Color.WHITE, null, null)));
+                rect.getStyleClass().add("anime-status-display");
             }
             @Override
             protected void updateItem(AnimeStatus item, boolean empty) {
                 super.updateItem(item, empty);
+                statusPseudoClasses.values().forEach(pseudoClass ->
+                        rect.pseudoClassStateChanged(pseudoClass, false));
                 if(item != null && !empty) {
-                    rect.setStroke(Color.BLACK);
-                    rect.setFill(paintMap.get(item));
                     setGraphic(rect);
+                    rect.pseudoClassStateChanged(statusPseudoClasses.get(item), true);
                 } else {
                     setGraphic(null);
                 }
@@ -131,6 +141,11 @@ public class MainWindowController {
         });
 
         userStatusCol.setCellFactory(col -> new TableCell<>(){
+            private static final PseudoClass
+                WATCHED_CLASS = PseudoClass.getPseudoClass("watched"),
+                RELEASED_CLASS = PseudoClass.getPseudoClass("released"),
+                NOT_AIRED_CLASS = PseudoClass.getPseudoClass("not-aired");
+
             private final HBox graphic;
             private final SegmentedBar<SegmentedBar.Segment> statusBar = new SegmentedBar<>();
             private final SegmentedBar.Segment watched, released, notAired;
@@ -151,20 +166,19 @@ public class MainWindowController {
                             return new SkinBase<Control>(this) {};
                         }
                     };
-                    Color color;
+
+                    region.getStyleClass().add("status-bar-segment");
                     if(segment == watched) {
-                        color = Color.DEEPSKYBLUE;
+                        region.pseudoClassStateChanged(WATCHED_CLASS, true);
                         region.setTooltip(new Tooltip("Watched"));
                     } else if(segment == released) {
-                        color = Color.LIGHTGREEN;
+                        region.pseudoClassStateChanged(RELEASED_CLASS, true);
                         region.setTooltip(new Tooltip("Released"));
                     } else {
-                        color = Color.LIGHTGRAY;
+                        region.pseudoClassStateChanged(NOT_AIRED_CLASS, true);
                         region.setTooltip(new Tooltip("Not yet aired"));
                     }
 
-                    region.setBackground(new Background(new BackgroundFill(
-                            color, new CornerRadii(1.0), new Insets(1.0))));
                     region.setOnMouseClicked(e -> {
                         getTableView().getSelectionModel().select(getTableRow().getIndex());
                         getTableView().requestFocus();
@@ -276,5 +290,37 @@ public class MainWindowController {
     private void addAnimeToList(UserAnime anime) {
         animeList.animes().add(anime);
         filteredAnimeLists.get(anime.getStatus()).add(anime);
+    }
+
+    public void windowClosed(Stage window) {
+        var savePath = Path.of("animelist.json");
+        while(true) {
+            try {
+                UserAnimeList.write(animeList, savePath);
+                return;
+            } catch (Exception e) {
+                var dialog = new ExceptionDialog(e);
+                var ignore = new ButtonType("Ignore and exit", ButtonBar.ButtonData.CANCEL_CLOSE);
+                var saveToNewFile = new ButtonType("Save to new file", ButtonBar.ButtonData.OK_DONE);
+                dialog.getDialogPane().getButtonTypes().setAll(ignore, saveToNewFile);
+
+                var button = dialog.showAndWait();
+                if(button.isPresent() && button.get() == saveToNewFile) {
+                    var fileChooser = new FileChooser();
+                    fileChooser.setInitialFileName("animelist.json");
+                    fileChooser.getExtensionFilters().setAll(new FileChooser.ExtensionFilter(
+                            "JSON file", "*.json"
+                    ));
+                    var file = fileChooser.showSaveDialog(window);
+                    if(file != null) {
+                        savePath = file.toPath();
+                    } else {
+                        return;
+                    }
+                } else {
+                    return;
+                }
+            }
+        }
     }
 }
