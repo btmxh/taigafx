@@ -6,6 +6,7 @@ import com.dah.taigafx.anime.AnimeType;
 import com.dah.taigafx.animelist.UserAnime;
 import com.dah.taigafx.animelist.UserAnimeList;
 import com.dah.taigafx.animelist.UserAnimeStatus;
+import com.dah.taigafx.config.Config;
 import com.jfoenix.controls.JFXButton;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
@@ -13,27 +14,38 @@ import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Group;
+import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import org.controlsfx.control.SegmentedBar;
 import org.controlsfx.dialog.ExceptionDialog;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class MainWindowController {
+    @FXML
+    private AnchorPane animeListPane;
     @FXML
     public AnchorPane allAnimePane;
     @FXML
@@ -46,21 +58,55 @@ public class MainWindowController {
     public AnchorPane droppedPane;
     @FXML
     public AnchorPane ptwPane;
-    @FXML
-    private AnchorPane sidebar;
+
+    // Settings
+    private ConfigWindowController configController;
+    private AnchorPane configPane;
+    private Scene configScene;
+    private Stage configStage;
 
     private final EnumMap<UserAnimeStatus, ObservableList<UserAnime>> filteredAnimeLists
             = new EnumMap<>(UserAnimeStatus.class);
     private UserAnimeList animeList;
+    private Config userConfig;
 
     @FXML
-    public void initialize() throws IOException {
-        animeList = UserAnimeList.read(Path.of("animelist.json"));
-        for(final var status : UserAnimeStatus.values()) {
+    public void initialize() {
+        // TODO: Move these file to a dedicated directory for TaigaFX
+        var animelistFile = Path.of("animelist.json");
+        var configFile = Path.of("config.json");
+
+        if (Files.exists(animelistFile)) {
+            try {
+                animeList = UserAnimeList.read(animelistFile);
+            } catch (IOException ex) {
+                System.err.println("Failed to read anime list file, creating new instead. Exception stack trace:");
+                ex.printStackTrace();
+            }
+        }
+
+        if (animeList == null) {
+            animeList = new UserAnimeList("anon", FXCollections.observableArrayList());
+        }
+
+        if (Files.exists(configFile)) {
+            try {
+                userConfig = Config.read(configFile);
+            } catch (IOException ex) {
+                System.err.println("Failed to read config file, using default instead. Exception stack trace:");
+                ex.printStackTrace();
+            }
+        }
+
+        if (userConfig == null) {
+            userConfig = new Config();
+        }
+
+        for (final var status : UserAnimeStatus.values()) {
             filteredAnimeLists.put(status, FXCollections.observableArrayList());
         }
 
-        for(final var anime : animeList.animes()) {
+        for (final var anime : animeList.animes()) {
             filteredAnimeLists.get(anime.getStatus()).add(anime);
         }
 
@@ -73,7 +119,7 @@ public class MainWindowController {
     }
 
     private void initAnimePane(@NotNull AnchorPane pane, @Nullable UserAnimeStatus status) {
-        var list = status == null? animeList.animes() :
+        var list = status == null ? animeList.animes() :
                 filteredAnimeLists.get(status);
 
         var table = new TableView<UserAnime>();
@@ -115,7 +161,7 @@ public class MainWindowController {
         animeTypeCol.setPrefWidth(80.0);
         animeSeasonCol.setPrefWidth(100.0);
 
-        animeStatusCol.setCellFactory(col -> new TableCell<>(){
+        animeStatusCol.setCellFactory(col -> new TableCell<>() {
             private static final Map<AnimeStatus, PseudoClass> statusPseudoClasses = Map.of(
                     AnimeStatus.AIRING, PseudoClass.getPseudoClass("airing"),
                     AnimeStatus.COMPLETED, PseudoClass.getPseudoClass("completed"),
@@ -125,16 +171,17 @@ public class MainWindowController {
                     AnimeStatus.NOT_RELEASED, PseudoClass.getPseudoClass("not-released")
             );
             private final Region rect = new Region();
+
             {
-                rect.setBackground(new Background(new BackgroundFill(Color.WHITE, null, null)));
                 rect.getStyleClass().add("anime-status-display");
             }
+
             @Override
             protected void updateItem(AnimeStatus item, boolean empty) {
                 super.updateItem(item, empty);
                 statusPseudoClasses.values().forEach(pseudoClass ->
                         rect.pseudoClassStateChanged(pseudoClass, false));
-                if(item != null && !empty) {
+                if (item != null && !empty) {
                     setGraphic(rect);
                     rect.pseudoClassStateChanged(statusPseudoClasses.get(item), true);
                 } else {
@@ -143,11 +190,11 @@ public class MainWindowController {
             }
         });
 
-        userStatusCol.setCellFactory(col -> new TableCell<>(){
+        userStatusCol.setCellFactory(col -> new TableCell<>() {
             private static final PseudoClass
-                WATCHED_CLASS = PseudoClass.getPseudoClass("watched"),
-                RELEASED_CLASS = PseudoClass.getPseudoClass("released"),
-                NOT_AIRED_CLASS = PseudoClass.getPseudoClass("not-aired");
+                    WATCHED_CLASS = PseudoClass.getPseudoClass("watched"),
+                    RELEASED_CLASS = PseudoClass.getPseudoClass("released"),
+                    NOT_AIRED_CLASS = PseudoClass.getPseudoClass("not-aired");
 
             private final HBox graphic;
             private final SegmentedBar<SegmentedBar.Segment> statusBar = new SegmentedBar<>();
@@ -166,15 +213,16 @@ public class MainWindowController {
                     var region = new Control() {
                         @Override
                         protected Skin<?> createDefaultSkin() {
-                            return new SkinBase<Control>(this) {};
+                            return new SkinBase<Control>(this) {
+                            };
                         }
                     };
 
                     region.getStyleClass().add("status-bar-segment");
-                    if(segment == watched) {
+                    if (segment == watched) {
                         region.pseudoClassStateChanged(WATCHED_CLASS, true);
                         region.setTooltip(new Tooltip("Watched"));
-                    } else if(segment == released) {
+                    } else if (segment == released) {
                         region.pseudoClassStateChanged(RELEASED_CLASS, true);
                         region.setTooltip(new Tooltip("Released"));
                     } else {
@@ -211,7 +259,7 @@ public class MainWindowController {
                 button.setTextFill(Color.WHITE);
                 Runnable updateButton = () -> {
                     var userAnime = getTableRow().getItem();
-                    if(userAnime == null) {
+                    if (userAnime == null) {
                         return;
                     }
                     var watched = userAnime.getEpisodeWatched();
@@ -220,16 +268,16 @@ public class MainWindowController {
 
                     var validEpsCount = newWatched >= 0
                             && (newWatched <= totalEpisodes || totalEpisodes == 0);
-                    button.setOpacity(validEpsCount? 1.0 : 0.0);
+                    button.setOpacity(validEpsCount ? 1.0 : 0.0);
                 };
                 button.setOnAction(evt -> {
                     var userAnime = getTableRow().getItem();
-                    if(userAnime == null || button.getOpacity() == 0.0) {
+                    if (userAnime == null || button.getOpacity() == 0.0) {
                         return;
                     }
                     var newWatched = userAnime.getEpisodeWatched() + episodeIncrement;
                     var episodes = userAnime.getAnime().episodes();
-                    var maxEpisodes = episodes == 0? Integer.MAX_VALUE : episodes;
+                    var maxEpisodes = episodes == 0 ? Integer.MAX_VALUE : episodes;
                     newWatched = Math.max(Math.min(newWatched, maxEpisodes), 0);
                     userAnime.setEpisodeWatched(newWatched);
                     updateButton.run();
@@ -242,12 +290,12 @@ public class MainWindowController {
             @Override
             protected void updateItem(UserAnime item, boolean empty) {
                 super.updateItem(item, empty);
-                if(item != null && !empty) {
+                if (item != null && !empty) {
 
                     int totalEps = item.getAnime().episodes();
                     int releasedEps = Math.min(totalEps, 3);
                     IntegerProperty watchedEps = item.episodeWatchedProperty();
-                    if(totalEps == 0) {
+                    if (totalEps == 0) {
                         // binding version of watched.setValue(watchedEps > 0? 1.0 : 0.0)
                         watched.valueProperty().unbind();
                         watched.valueProperty().bind(Bindings.when(watchedEps.greaterThan(0))
@@ -275,7 +323,7 @@ public class MainWindowController {
                     }
                     label.textProperty().unbind();
                     label.textProperty().bind(watchedEps.asString().concat("/")
-                            .concat(totalEps == 0? "?" : Integer.toString(totalEps)));
+                            .concat(totalEps == 0 ? "?" : Integer.toString(totalEps)));
                     setGraphic(graphic);
                 } else {
                     setGraphic(null);
@@ -295,35 +343,89 @@ public class MainWindowController {
         filteredAnimeLists.get(anime.getStatus()).add(anime);
     }
 
-    public void windowClosed(Stage window) {
-        var savePath = Path.of("animelist.json");
-        while(true) {
-            try {
-                UserAnimeList.write(animeList, savePath);
-                return;
-            } catch (Exception e) {
-                var dialog = new ExceptionDialog(e);
-                var ignore = new ButtonType("Ignore and exit", ButtonBar.ButtonData.CANCEL_CLOSE);
-                var saveToNewFile = new ButtonType("Save to new file", ButtonBar.ButtonData.OK_DONE);
-                dialog.getDialogPane().getButtonTypes().setAll(ignore, saveToNewFile);
+    public void selectAnimeList() {
+        animeListPane.toFront();
+    }
 
-                var button = dialog.showAndWait();
-                if(button.isPresent() && button.get() == saveToNewFile) {
-                    var fileChooser = new FileChooser();
-                    fileChooser.setInitialFileName("animelist.json");
-                    fileChooser.getExtensionFilters().setAll(new FileChooser.ExtensionFilter(
-                            "JSON file", "*.json"
-                    ));
-                    var file = fileChooser.showSaveDialog(window);
-                    if(file != null) {
-                        savePath = file.toPath();
-                    } else {
-                        return;
-                    }
-                } else {
-                    return;
-                }
+    public void openSettings(ActionEvent evt) {
+        if (configStage == null) {
+            try {
+                var loader = new FXMLLoader(MainWindowController.class.getResource("/config/ConfigWindow.fxml"));
+                configPane = loader.load();
+                configController = loader.getController();
+                configController.setMainController(this);
+                configScene = new Scene(configPane);
+                configStage = new Stage();
+                var eventSource = (Node) evt.getSource();
+                configStage.initOwner(eventSource.getScene().getWindow());
+                configStage.initModality(Modality.WINDOW_MODAL);
+                configStage.setScene(configScene);
+                configScene.getStylesheets().add(Objects.requireNonNull(MainWindowController.class.getResource("/common/common.css")).toExternalForm());
+            } catch (IOException e) {
+                new ExceptionDialog(e).showAndWait();
+                return;
             }
         }
+        configStage.showAndWait();
+    }
+
+    public void windowClosed(Window window) {
+        tryToSaveAnimeList(Path.of("animelist.json"));
+        tryToSaveConfig(Path.of("config.json"));
+    }
+
+    public void tryToSaveAnimeList(Path animeListFile) {
+        if(animeListFile == null)   return;
+        try {
+            UserAnimeList.write(animeList, animeListFile);
+        } catch (IOException ex) {
+            if(showIOExceptionDialog(ex, "An exception occurred", "Error saving anime list file at '" + animeListFile.toAbsolutePath() + "'")) {
+                var newAnimeListFile = saveFileChooserSimple(getWindow(),
+                        animeListFile.getFileName().toString(), "JSON file",
+                        "*.json");
+                tryToSaveAnimeList(newAnimeListFile);
+            }
+        }
+    }
+
+    public void tryToSaveConfig(Path configFile) {
+        if(configFile == null)  return;
+        try {
+            Config.write(userConfig, configFile);
+        } catch (IOException ex) {
+            if(showIOExceptionDialog(ex, "An exception occurred", "Error saving config file at '" + configFile.toAbsolutePath() + "'")) {
+                var newConfigFile = saveFileChooserSimple(getWindow(),
+                        configFile.getFileName().toString(), "JSON file",
+                        "*.json");
+                tryToSaveConfig(newConfigFile);
+            }
+        }
+    }
+
+    // must not be called in initialize()
+    private Window getWindow() {
+        return allAnimePane.getScene().getWindow();
+    }
+
+    private boolean showIOExceptionDialog(IOException ex, String title, String header) {
+        var dialog = new ExceptionDialog(ex);
+        if(title != null)   dialog.setTitle(title);
+        if(header != null)  dialog.setHeaderText(header);
+        var ignore = new ButtonType("Ignore and exit", ButtonBar.ButtonData.CANCEL_CLOSE);
+        var saveToNewFile = new ButtonType("Save to new file", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().setAll(ignore, saveToNewFile);
+        return dialog.showAndWait().filter(t -> t == saveToNewFile).isPresent();
+    }
+
+    private Path saveFileChooserSimple(Window owner, String filename, String filterName, String... filterExts) {
+        var chooser = new FileChooser();
+        if(filename != null) chooser.setInitialFileName(filename);
+        if(filterName != null && filterExts != null) {
+            chooser.getExtensionFilters().setAll(
+                    new FileChooser.ExtensionFilter(filterName, filterExts)
+            );
+        }
+        var file = chooser.showSaveDialog(owner);
+        return file == null? null : file.toPath();
     }
 }

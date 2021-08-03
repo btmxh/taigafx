@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="480.0" prefWidth="720.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.dah.taigafx.controllers.ConfigWindowController">
+   <children>
+      <TreeView layoutX="14.0" layoutY="14.0" prefHeight="452.0" prefWidth="192.0" showRoot="false" styleClass="invis-list-view" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="14.0" />
+      <ScrollPane layoutX="226.0" layoutY="24.0" prefHeight="452.0" prefWidth="490.0" styleClass="invis-scroll-pane" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="216.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="14.0">
+         <content>
+            <VBox spacing="10.0">
+               <children>
+                  <Label text="Services">
+                     <font>
+                        <Font size="24.0" />
+                     </font>
+                  </Label>
+                  <Separator prefWidth="200.0" />
+                  <BorderPane>
+                     <right>
+                        <ChoiceBox prefHeight="24.0" prefWidth="300.0" BorderPane.alignment="CENTER">
+                           <tooltip>
+                              <Tooltip text="The service used to retrieve metadata (title, number of episodes, etc.) of an anime from" />
+                           </tooltip></ChoiceBox>
+                     </right>
+                     <left>
+                        <Label text="Metadata Provider" BorderPane.alignment="CENTER" />
+                     </left>
+                  </BorderPane>
+                  <BorderPane layoutX="18.0" layoutY="58.0">
+                     <right>
+                        <ChoiceBox prefHeight="24.0" prefWidth="300.0" BorderPane.alignment="CENTER">
+                           <tooltip>
+                              <Tooltip text="The service that host your anime list online. You have to give TaigaFX some credentials with your accounts on these sites to synchronize that with the local anime list." />
+                           </tooltip></ChoiceBox>
+                     </right>
+                     <left>
+                        <Label text="Anime List Service" BorderPane.alignment="CENTER" />
+                     </left>
+                  </BorderPane>
+                  <BorderPane layoutX="18.0" layoutY="105.0">
+                     <left>
+                        <Label text="AOD Extras Directory" BorderPane.alignment="CENTER">
+                           <BorderPane.margin>
+                              <Insets right="23.0" />
+                           </BorderPane.margin>
+                        </Label>
+                     </left>
+                     <center>
+                        <TextField prefHeight="24.0" prefWidth="260.0" BorderPane.alignment="CENTER">
+                           <tooltip>
+                              <Tooltip text="Path to AOD Extras, required to use anime-offline-database as your metadata provider (read README for more info)" />
+                           </tooltip></TextField>
+                     </center>
+                     <right>
+                        <Button mnemonicParsing="false" text="..." BorderPane.alignment="CENTER" />
+                     </right>
+                  </BorderPane>
+                  <BorderPane layoutX="18.0" layoutY="71.0">
+                     <right>
+                        <ChoiceBox prefHeight="24.0" prefWidth="300.0" BorderPane.alignment="CENTER">
+                           <tooltip>
+                              <Tooltip text="ID mapping is the action of mapping ID of different metadata providers, for example mapping MyAnimeList ID to AniList ID" />
+                           </tooltip>
+                        </ChoiceBox>
+                     </right>
+                     <left>
+                        <Label text="ID mapping method" BorderPane.alignment="CENTER" />
+                     </left>
+                  </BorderPane>
+                  <CheckBox mnemonicParsing="false" text="Auto synchronize with service whenever my anime list changes">
+                     <tooltip>
+                        <Tooltip text="Self explanatory" />
+                     </tooltip></CheckBox>
+                  <CheckBox mnemonicParsing="false" text="Auto synchronize with service on startup">
+                     <tooltip>
+                        <Tooltip text="Self explanatory" />
+                     </tooltip></CheckBox>
+                  <CheckBox layoutX="18.0" layoutY="154.0" mnemonicParsing="false" text="Auto synchronize with service on exit">
+                     <tooltip>
+                        <Tooltip text="Self explanatory" />
+                     </tooltip></CheckBox>
+                  <HBox alignment="CENTER_LEFT" spacing="12.0">
+                     <children>
+                        <CheckBox mnemonicParsing="false" text="Auto synchronize with service every">
+                           <tooltip>
+                              <Tooltip text="Self explanatory" />
+                           </tooltip></CheckBox>
+                        <Spinner editable="true" prefHeight="24.0" prefWidth="73.0" />
+                        <ChoiceBox prefHeight="24.0" prefWidth="105.0" />
+                     </children>
+                  </HBox>
+                  <Button mnemonicParsing="false" text="Manage Accounts">
+                     <tooltip>
+                        <Tooltip text="Manage (add or remove) accounts, an account is required to sync with an anime list service" />
+                     </tooltip></Button>
+               </children>
+               <padding>
+                  <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+               </padding>
+            </VBox>
+         </content>
+      </ScrollPane>
+      <ScrollPane layoutX="216.0" layoutY="14.0" prefHeight="452.0" prefWidth="490.0" styleClass="invis-scroll-pane" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="216.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="14.0">
+         <content>
+            <VBox spacing="10.0">
+               <children>
+                  <Label text="Anime List">
+                     <font>
+                        <Font size="24.0" />
+                     </font>
+                  </Label>
+                  <Separator prefWidth="200.0" />
+                  <Label layoutX="18.0" layoutY="18.0" text="Actions">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Label>
+                  <BorderPane>
+                     <right>
+                        <ChoiceBox prefHeight="24.0" prefWidth="323.0" BorderPane.alignment="CENTER" />
+                     </right>
+                     <left>
+                        <Label text="Double Click" BorderPane.alignment="CENTER" />
+                     </left>
+                  </BorderPane>
+                  <BorderPane layoutX="18.0" layoutY="58.0">
+                     <right>
+                        <ChoiceBox prefHeight="24.0" prefWidth="323.0" BorderPane.alignment="CENTER" />
+                     </right>
+                     <left>
+                        <Label text="Middle Click" BorderPane.alignment="CENTER" />
+                     </left>
+                  </BorderPane>
+                  <BorderPane layoutX="18.0" layoutY="136.0">
+                     <right>
+                        <ChoiceBox prefHeight="24.0" prefWidth="323.0" BorderPane.alignment="CENTER" />
+                     </right>
+                     <left>
+                        <Label text="Ctrl + Click" BorderPane.alignment="CENTER" />
+                     </left>
+                  </BorderPane>
+                  <BorderPane layoutX="18.0" layoutY="170.0">
+                     <right>
+                        <ChoiceBox prefHeight="24.0" prefWidth="323.0" BorderPane.alignment="CENTER" />
+                     </right>
+                     <left>
+                        <Label text="Alt + Click" BorderPane.alignment="CENTER" />
+                     </left>
+                  </BorderPane>
+                  <Region prefHeight="8.0" prefWidth="462.0" visible="false" />
+                  <CheckBox mnemonicParsing="false" text="Highlight anime with new episodes" />
+                  <CheckBox layoutX="18.0" layoutY="256.0" mnemonicParsing="false" text="Highlight anime with newly downloaded episodes" />
+                  <HBox spacing="14.0">
+                     <children>
+                        <Button mnemonicParsing="false" text="Import" />
+                        <Button layoutX="10.0" layoutY="10.0" mnemonicParsing="false" text="Export">
+                           <tooltip>
+                              <Tooltip />
+                           </tooltip></Button>
+                     </children>
+                  </HBox>
+               </children>
+               <padding>
+                  <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+               </padding>
+            </VBox>
+         </content>
+      </ScrollPane>
+   </children>
+</AnchorPane>
