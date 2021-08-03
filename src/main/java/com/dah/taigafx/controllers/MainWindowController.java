@@ -86,8 +86,11 @@ public class MainWindowController {
         var animeTypeCol = new TableColumn<UserAnime, AnimeType>("Type");
         var animeSeasonCol = new TableColumn<UserAnime, AnimeSeason.WithYear>("Season");
 
-        //noinspection unchecked
-        table.getColumns().addAll(animeStatusCol, animeTitleCol, userStatusCol, animeTypeCol, animeSeasonCol);
+        table.getColumns().add(animeStatusCol);
+        table.getColumns().add(animeTitleCol);
+        table.getColumns().add(userStatusCol);
+        table.getColumns().add(animeTypeCol);
+        table.getColumns().add(animeSeasonCol);
 
         animeStatusCol.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().getAnime().status()));
         animeTitleCol.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().getAnime().title()));
