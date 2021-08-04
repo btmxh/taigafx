@@ -1,66 +1,75 @@
 package com.dah.taigafx.anime.loaders;
 
-import com.dah.taigafx.Json;
+import com.dah.taigafx.Provider;
 import com.dah.taigafx.anime.*;
 import com.dah.taigafx.exceptions.APIRequestException;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.TimeUnit;
 
-public class AodLoader extends BaseAnimeLoader {
-    private @NotNull final Path aodExtrasPath;
-    public AodLoader(@NotNull Path aodExtrasPath, @NotNull Duration timeout) {
-        super(timeout);
-        this.aodExtrasPath = aodExtrasPath;
+// Read more here:
+// https://github.com/ngoduyanh/aod-extras
+public class AodLoader extends BaseLoader implements AnimeLoader {
+    public AodLoader(@NotNull Provider provider) {
+        super(provider);
     }
 
-    public AodLoader(@NotNull Path aodExtrasPath) {
-        this.aodExtrasPath = aodExtrasPath;
+    private Anime loadAnimeSynchronous(String id) {
+        try {
+            var hash = MessageDigest.getInstance("SHA-1");
+            var bytes = hash.digest(id.getBytes(StandardCharsets.UTF_8));
+            var first8Chars = Arrays.copyOf(bytes, 4); // a hex char = 1/2 byte
+            var bucket = (((first8Chars[0] & 0xff) << 24)
+                    | ((first8Chars[1] & 0xff) << 16)
+                    | ((first8Chars[2] & 0xff) << 8)
+                    | ((first8Chars[3] & 0xff))) & 1023;
+            var aodExtrasPath = provider.getConfig().service().getAodExtrasDirectory();
+            if(aodExtrasPath == null) {
+                throw new CompletionException(new AodException(AodException.Problem.AOD_NOT_SET_UP));
+            }
+            var filename = aodExtrasPath.resolve("minidb")
+                    .resolve(bucket + ".json").toAbsolutePath().toString();
+            var data = provider.getObjectMapper().readValue(new File(filename), AodData.class);
+            var result = data.data.stream()
+                    .filter(a -> a.id().equals(id))
+                    .findFirst();
+            if(result.isEmpty()) {
+                var msg = "no entry with id '" + id + "' in bucket file '" + filename + "'";
+                var error = new APIRequestException.Error(404, msg);
+                throw new CompletionException(new APIRequestException(List.of(error)));
+            } else {
+                return result.get().toGenericAnime();
+            }
+
+        } catch (NoSuchAlgorithmException e) {
+            // never throws
+            throw new InternalError();
+        } catch (IOException e) {
+            throw new CompletionException(e);
+        }
     }
 
     @Override
     public CompletableFuture<Anime> loadAnime(String id) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                var hash = MessageDigest.getInstance("SHA-1");
-                var bytes = hash.digest(id.getBytes(StandardCharsets.UTF_8));
-                var first8Chars = Arrays.copyOf(bytes, 4); // a hex char = 1/2 byte
-                var bucket = (((first8Chars[0] & 0xff) << 24)
-                        | ((first8Chars[1] & 0xff) << 16)
-                        | ((first8Chars[2] & 0xff) << 8)
-                        | ((first8Chars[3] & 0xff))) & 1023;
-                var filename = aodExtrasPath.resolve("minidb")
-                        .resolve(bucket + ".json").toAbsolutePath().toString();
-                var data = Json.getObjectMapper().readValue(new File(filename), AodData.class);
-                var result = data.data.stream()
-                        .filter(a -> a.id().equals(id))
-                        .findFirst();
-                if(result.isEmpty()) {
-                    var msg = "no entry with id '" + id + "' in bucket file '" + filename + "'";
-                    var error = new APIRequestException.Error(404, msg);
-                    throw new CompletionException(new APIRequestException(List.of(error)));
-                } else {
-                    return result.get().toGenericAnime();
-                }
+        var timeout = getTimeout();
+        return CompletableFuture.supplyAsync(() -> loadAnimeSynchronous(id))
+                .orTimeout(timeout.getNano() + timeout.getSeconds() * 1_000_000_000,
+                        TimeUnit.NANOSECONDS);
+    }
 
-            } catch (NoSuchAlgorithmException e) {
-                // never throws
-                throw new IllegalStateException();
-            } catch (IOException e) {
-                throw new CompletionException(e);
-            }
-        }).orTimeout(timeout.getNano() + timeout.getSeconds() * 1_000_000_000, TimeUnit.NANOSECONDS);
+    @Override
+    public CompletableFuture<SearchResult> searchAnime(String query, int page) {
+        return null;
     }
 
     public static record AodData(List<AodAnime> data) {}
@@ -170,5 +179,21 @@ public class AodLoader extends BaseAnimeLoader {
 
     public enum AodSeason {
         SPRING, SUMMER, FALL, WINTER, UNDEFINED
+    }
+
+    public static class AodException extends RuntimeException {
+        private @NotNull final Problem problem;
+
+        public AodException(@NotNull Problem problem) {
+            this.problem = problem;
+        }
+
+        public Problem getExceptionCause() {
+            return problem;
+        }
+
+        public enum Problem {
+            AOD_NOT_SET_UP
+        }
     }
 }

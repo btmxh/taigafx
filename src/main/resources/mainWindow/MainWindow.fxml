@@ -5,14 +5,18 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1080.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.dah.taigafx.controllers.MainWindowController">
    <children>
-      <AnchorPane prefHeight="720.0" prefWidth="64.0" styleClass="sidebar">
+      <VBox prefWidth="64.0">
          <children>
-            <JFXButton layoutX="1.0" onAction="#selectAnimeList" prefHeight="64.0" prefWidth="64.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <JFXButton onAction="#selectAnimeList" prefHeight="64.0" prefWidth="64.0">
                <graphic>
                   <FontAwesomeIconView fill="WHITE" glyphName="LIST_OL" />
                </graphic>
@@ -23,7 +27,18 @@
                   <Insets bottom="-8.0" left="-8.0" right="-8.0" top="-8.0" />
                </padding>
             </JFXButton>
-            <JFXButton layoutX="10.0" layoutY="10.0" onAction="#openSettings" prefHeight="64.0" prefWidth="64.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="64.0">
+            <JFXButton onAction="#selectSearch" prefHeight="64.0" prefWidth="64.0">
+               <graphic>
+                  <FontAwesomeIconView fill="WHITE" glyphName="SEARCH" />
+               </graphic>
+               <font>
+                  <Font size="32.0" />
+               </font>
+               <padding>
+                  <Insets bottom="-8.0" left="-8.0" right="-8.0" top="-8.0" />
+               </padding>
+            </JFXButton>
+            <JFXButton onAction="#openSettings" prefHeight="64.0" prefWidth="64.0">
                <graphic>
                   <FontAwesomeIconView fill="WHITE" glyphName="COG" />
                </graphic>
@@ -35,7 +50,7 @@
                </padding>
             </JFXButton>
          </children>
-      </AnchorPane>
+      </VBox>
       <AnchorPane fx:id="animeListPane" layoutX="64.0" styleClass="content-pane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="64.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
             <TabPane prefHeight="720.0" prefWidth="1016.0" styleClass="content" tabClosingPolicy="UNAVAILABLE">
@@ -73,5 +88,40 @@
               </tabs>
             </TabPane>
          </children></AnchorPane>
+      <AnchorPane fx:id="searchPane" prefHeight="200.0" prefWidth="200.0" styleClass="content-pane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="64.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <TextField layoutX="824.0" layoutY="3.0" prefHeight="24.0" prefWidth="260.0" promptText="Type to search here" AnchorPane.rightAnchor="31.0" AnchorPane.topAnchor="3.0">
+               <opaqueInsets>
+                  <Insets bottom="-2.0" />
+               </opaqueInsets>
+            </TextField>
+            <TableView fx:id="searchTable" layoutX="820.0" layoutY="30.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="32.0">
+              <columns>
+                <TableColumn prefWidth="-1.0" styleClass="left-aligned-table-column-header" text="  Anime Title">
+                     <columns>
+                      <TableColumn fx:id="searchTableAnimeStatusCol" prefWidth="20.0" styleClass="invis-table-column-header" />
+                        <TableColumn fx:id="searchTableAnimeTitleCol" prefWidth="630.0" styleClass="invis-table-column-header" />
+                     </columns>
+                  </TableColumn>
+                  <TableColumn fx:id="searchTableAnimeTypeCol" prefWidth="75.0" text="Type" />
+                  <TableColumn fx:id="searchTableAnimeEpisodesCol" prefWidth="75.0" text="Episodes" />
+                  <TableColumn fx:id="searchTableAnimeScoreCol" prefWidth="89.0" text="Score" />
+                  <TableColumn fx:id="searchTableAnimeSeasonCol" prefWidth="126.0" styleClass="right-aligned-table-column-header" text="Season  " />
+              </columns>
+            </TableView>
+         </children>
+      </AnchorPane>
+      <JFXButton layoutX="1050.0" layoutY="5.0" onAction="#doSearch">
+         <graphic>
+            <FontAwesomeIconView fill="WHITE" glyphName="SEARCH">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </FontAwesomeIconView>
+         </graphic>
+         <padding>
+            <Insets bottom="4.0" left="4.0" right="4.0" top="2.0" />
+         </padding>
+      </JFXButton>
    </children>
 </AnchorPane>

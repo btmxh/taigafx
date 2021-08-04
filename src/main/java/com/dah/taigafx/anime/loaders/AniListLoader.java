@@ -1,6 +1,6 @@
 package com.dah.taigafx.anime.loaders;
 
-import com.dah.taigafx.Json;
+import com.dah.taigafx.Provider;
 import com.dah.taigafx.anime.*;
 import com.dah.taigafx.exceptions.APIRequestException;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -25,7 +25,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
-public class AniListLoader extends BaseAnimeLoader {
+public class AniListLoader extends BaseLoader implements AnimeLoader {
     private static final String ANILIST_API_URL = "https://graphql.anilist.co";
     private static final String ANILIST_QUERY_STRING = """
             query ($id: Int) {
@@ -73,43 +73,45 @@ public class AniListLoader extends BaseAnimeLoader {
             }
             """;
 
-    public AniListLoader(@NotNull Duration timeout) {
-        super(timeout);
-    }
-
-    public AniListLoader() {
+    public AniListLoader(@NotNull Provider provider) {
+        super(provider);
     }
 
     @Override
     public CompletableFuture<Anime> loadAnime(String id) {
-        var request = HttpRequest.newBuilder()
-                .uri(URI.create(ANILIST_API_URL))
-                .timeout(timeout)
+        var request = buildRequest(ANILIST_API_URL)
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(createBodyJSONQuery(id)))
                 .build();
-        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))
-                .thenApply(r -> {
-                    try {
-                        var response = Json.getObjectMapper().readValue(r.body(), AniListResponse.class);
-                        if(response.errors() == null || response.errors().isEmpty()) {
-                            return response.data().media().toGenericAnime();
-                        } else {
-                            throw new CompletionException(new APIRequestException(
-                                    response.errors().stream()
-                                            .map(e -> new APIRequestException.Error(e.status(), e.message()))
-                                            .collect(Collectors.toList())
-                            ));
-                        }
-                    } catch (JsonProcessingException e) {
-                        throw new CompletionException(e);
-                    }
-                });
+        return getHttpClient().sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(this::handleAnimeResponse);
+    }
+
+    private Anime handleAnimeResponse(HttpResponse<String> r) {
+        try {
+            var response = provider.getObjectMapper().readValue(r.body(), AniListResponse.class);
+            if(response.errors() == null || response.errors().isEmpty()) {
+                return response.data().media().toGenericAnime();
+            } else {
+                throw new CompletionException(new APIRequestException(
+                        response.errors().stream()
+                                .map(e -> new APIRequestException.Error(e.status(), e.message()))
+                                .collect(Collectors.toList())
+                ));
+            }
+        } catch (JsonProcessingException e) {
+            throw new CompletionException(e);
+        }
+    }
+
+    @Override
+    public CompletableFuture<SearchResult> searchAnime(String query, int page) {
+        return null;
     }
 
     private String createBodyJSONQuery(String id) {
-        var objectMapper = Json.getObjectMapper();
+        var objectMapper = provider.getObjectMapper();
         var node = objectMapper.createObjectNode();
         var variables = objectMapper.createObjectNode();
         node.put("query", ANILIST_QUERY_STRING);

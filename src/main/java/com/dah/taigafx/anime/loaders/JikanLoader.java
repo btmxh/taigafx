@@ -1,19 +1,22 @@
 package com.dah.taigafx.anime.loaders;
 
-import com.dah.taigafx.Json;
+import com.dah.taigafx.Provider;
 import com.dah.taigafx.anime.*;
 import com.dah.taigafx.exceptions.APIRequestException;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -22,38 +25,60 @@ import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class JikanLoader extends BaseAnimeLoader {
-    private @NotNull ObjectMapper objectMapper;
-    public JikanLoader(@NotNull Duration timeout) {
-        super(timeout);
-        objectMapper = Json.getObjectMapper().copy();
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
-
-    public JikanLoader() {
-        objectMapper = Json.getObjectMapper().copy();
+public class JikanLoader extends BaseLoader implements AnimeLoader {
+    private @NotNull final ObjectMapper objectMapper;
+    public JikanLoader(@NotNull Provider provider) {
+        super(provider);
+        objectMapper = provider.getObjectMapper().copy();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     @Override
+    public @NotNull ObjectMapper getObjectMapper() {
+        return objectMapper;
+    }
+
+    public JsonNode handleJikanError(JsonNode tree) throws CompletionException {
+        try {
+            var data = tree.get("data");
+            if(data == null) {
+                // error occurred
+                var error = objectMapper.treeToValue(tree, JikanErrorResponse.class);
+                var genericError = new APIRequestException.Error(error.status(), error.message());
+                throw new CompletionException(new APIRequestException(List.of(genericError)));
+            } else {
+                return data;
+            }
+        } catch (JsonProcessingException e) {
+            throw new CompletionException(e);
+        }
+    }
+
+    @Override
     public CompletableFuture<Anime> loadAnime(String id) {
-        var request = HttpRequest.newBuilder(URI.create("https://api.jikan.moe/v4/anime/" + id))
-                .timeout(timeout)
-                .GET()
-                .build();
-        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+        var request = buildRequest("https://api.jikan.moe/v4/anime/" + id).GET().build();
+        return getHttpClient().sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(response -> {
                     try {
                         var tree = objectMapper.readTree(response.body());
-                        var data = tree.get("data");
-                        if(data == null) {
-                            // error occurred
-                            var error = objectMapper.treeToValue(tree, JikanErrorResponse.class);
-                            var genericError = new APIRequestException.Error(error.status(), error.message());
-                            throw new CompletionException(new APIRequestException(List.of(genericError)));
-                        } else {
-                            return objectMapper.treeToValue(data, JikanAnime.class).toGenericAnime();
-                        }
+                        return objectMapper.treeToValue(handleJikanError(tree), JikanAnime.class).toGenericAnime();
+                    } catch (JsonProcessingException e) {
+                        throw new CompletionException(e);
+                    }
+                });
+    }
+
+    @Override
+    public CompletableFuture<SearchResult> searchAnime(String query, int page) {
+        query = URLEncoder.encode(query, StandardCharsets.UTF_8);
+        var url = "https://api.jikan.moe/v4/anime?q=" + query + "&page=" + (page + 1);
+        var request = buildRequest(url).GET().build();
+        return getHttpClient().sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(response -> {
+                    try {
+                        var tree = objectMapper.readTree(response.body());
+                        handleJikanError(tree);
+                        return objectMapper.treeToValue(tree, JikanSearchResponse.class).toSearchResult(page);
                     } catch (JsonProcessingException e) {
                         throw new CompletionException(e);
                     }
@@ -62,6 +87,19 @@ public class JikanLoader extends BaseAnimeLoader {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static record JikanErrorResponse(int status, String message) {}
+    public static record JikanSearchResponse(JikanPagination pagination, List<JikanAnime> data) {
+        public SearchResult toSearchResult(int currentPage) {
+            return new SearchResult(
+                    new SearchResult.SearchPage(data.size(), currentPage, pagination.hasNext()),
+                    data.stream().map(JikanAnime::toGenericAnime).collect(Collectors.toCollection(ArrayList::new))
+            );
+        }
+    }
+
+    public static record JikanPagination(
+            @JsonProperty("last_visible_page") int pageCount,
+            @JsonProperty("has_next_page") boolean hasNext
+    ) {}
 
     public static record JikanAnime(
             @JsonProperty("mal_id") int malID,
@@ -86,7 +124,9 @@ public class JikanLoader extends BaseAnimeLoader {
         public Anime toGenericAnime() {
             return new Anime(
                     Map.of(
-                            AnimeSource.MYANIMELIST, "https://myanimelist.net/anime/" + malID()
+                            AnimeSource.MYANIMELIST, "https://myanimelist.net/anime/" + malID(),
+                            // MAL is top priority on aod-extras
+                            AnimeSource.ANIME_OFFLINE_DATABASE, "https://myanimelist.net/anime/" + malID()
                     ),
                     title,
                     titleEng,

@@ -1,28 +1,34 @@
 package com.dah.taigafx.anime.loaders;
 
+import com.dah.taigafx.Provider;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jetbrains.annotations.NotNull;
 
+import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 import java.time.Duration;
 
 public class BaseLoader {
-    protected @NotNull final HttpClient httpClient;
-    protected @NotNull Duration timeout;
+    protected @NotNull final Provider provider;
 
-    public BaseLoader(@NotNull HttpClient httpClient, @NotNull Duration timeout) {
-        this.httpClient = httpClient;
-        this.timeout = timeout;
+    public BaseLoader(@NotNull Provider provider) {
+        this.provider = provider;
     }
 
-    public BaseLoader(@NotNull Duration timeout) {
-        this(HttpClient.newBuilder().build(), timeout);
+    public @NotNull HttpClient getHttpClient() {
+        return provider.getHttpClient();
     }
 
-    public BaseLoader() {
-        this(Duration.ofMinutes(2));
+    public @NotNull ObjectMapper getObjectMapper() {
+        return provider.getObjectMapper();
     }
 
-    public void setTimeout(@NotNull Duration timeout) {
-        this.timeout = timeout;
+    public @NotNull Duration getTimeout() {
+        return provider.getConnectionTimeout();
+    }
+
+    public HttpRequest.Builder buildRequest(String url) {
+        return HttpRequest.newBuilder(URI.create(url)).timeout(getTimeout());
     }
 }

@@ -1,6 +1,8 @@
 package com.dah.taigafx.controllers;
 
 import com.dah.taigafx.Main;
+import com.dah.taigafx.Provider;
+import com.dah.taigafx.anime.Anime;
 import com.dah.taigafx.anime.AnimeSeason;
 import com.dah.taigafx.anime.AnimeStatus;
 import com.dah.taigafx.anime.AnimeType;
@@ -34,6 +36,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import javafx.util.Callback;
 import org.controlsfx.control.SegmentedBar;
 import org.controlsfx.dialog.ExceptionDialog;
 import org.jetbrains.annotations.NotNull;
@@ -47,20 +50,22 @@ import java.util.Map;
 import java.util.Objects;
 
 public class MainWindowController {
-    @FXML
-    private AnchorPane animeListPane;
-    @FXML
+    public AnchorPane animeListPane;
     public AnchorPane allAnimePane;
-    @FXML
     public AnchorPane currentlyWatchingPane;
-    @FXML
     public AnchorPane completedPane;
-    @FXML
     public AnchorPane onHoldPane;
-    @FXML
     public AnchorPane droppedPane;
-    @FXML
     public AnchorPane ptwPane;
+
+    public AnchorPane searchPane;
+    public TableView<Anime> searchTable;
+    public TableColumn<Anime, AnimeStatus> searchTableAnimeStatusCol;
+    public TableColumn<Anime, String> searchTableAnimeTitleCol;
+    public TableColumn<Anime, AnimeType> searchTableAnimeTypeCol;
+    public TableColumn<Anime, Integer> searchTableAnimeEpisodesCol;
+    public TableColumn<Anime, Double> searchTableAnimeScoreCol;
+    public TableColumn<Anime, AnimeSeason> searchTableAnimeSeasonCol;
 
     // Settings
     private ConfigWindowController configController;
@@ -74,36 +79,30 @@ public class MainWindowController {
     private Config userConfig;
     private Main app;
 
+    private Provider provider;
+
     @FXML
     public void initialize() {
         // TODO: Move these file to a dedicated directory for TaigaFX
-        var animelistFile = Path.of("animelist.json");
         var configFile = Path.of("config.json");
+        var animelistFile = Path.of("animelist.json");
 
-        if (Files.exists(animelistFile)) {
-            try {
-                animeList = UserAnimeList.read(animelistFile);
-            } catch (IOException ex) {
-                System.err.println("Failed to read anime list file, creating new instead. Exception stack trace:");
-                ex.printStackTrace();
-            }
-        }
-
-        if (animeList == null) {
-            animeList = new UserAnimeList("anon", FXCollections.observableArrayList());
-        }
-
-        if (Files.exists(configFile)) {
-            try {
-                userConfig = Config.read(configFile);
-            } catch (IOException ex) {
-                System.err.println("Failed to read config file, using default instead. Exception stack trace:");
-                ex.printStackTrace();
-            }
-        }
-
-        if (userConfig == null) {
+        try {
+            userConfig = Objects.requireNonNull(Config.read(new Provider(new Config()), configFile));
+        } catch (IOException ex) {
+            System.err.println("Failed to read config file, using default instead. Exception stack trace:");
+            ex.printStackTrace();
             userConfig = new Config();
+        }
+
+        provider = new Provider(userConfig);
+
+        try {
+            animeList = Objects.requireNonNull(UserAnimeList.read(provider, animelistFile));
+        } catch (IOException ex) {
+            System.err.println("Failed to read anime list file, creating new instead. Exception stack trace:");
+            ex.printStackTrace();
+            animeList = new UserAnimeList("anon", FXCollections.observableArrayList());
         }
 
         for (final var status : UserAnimeStatus.values()) {
@@ -120,6 +119,20 @@ public class MainWindowController {
         initAnimePane(onHoldPane, UserAnimeStatus.ON_HOLD);
         initAnimePane(droppedPane, UserAnimeStatus.DROPPED);
         initAnimePane(ptwPane, UserAnimeStatus.PLAN_TO_WATCH);
+
+        searchTableAnimeStatusCol.setCellFactory(getAnimeStatusCellFactory());
+        searchTableAnimeStatusCol.setCellValueFactory(data ->
+                new ReadOnlyObjectWrapper<>(data.getValue().status()));
+        searchTableAnimeTitleCol.setCellValueFactory(data ->
+                new ReadOnlyObjectWrapper<>(data.getValue().title()));
+        searchTableAnimeTypeCol.setCellValueFactory(data ->
+                new ReadOnlyObjectWrapper<>(data.getValue().type()));
+        searchTableAnimeEpisodesCol.setCellValueFactory(data ->
+                new ReadOnlyObjectWrapper<>(data.getValue().episodes()));
+        searchTableAnimeScoreCol.setCellValueFactory(data ->
+                new ReadOnlyObjectWrapper<>(data.getValue().score()));
+        searchTableAnimeSeasonCol.setCellValueFactory(data ->
+                new ReadOnlyObjectWrapper<>(data.getValue().season()));
     }
 
     private void initAnimePane(@NotNull AnchorPane pane, @Nullable UserAnimeStatus status) {
@@ -165,34 +178,7 @@ public class MainWindowController {
         animeTypeCol.setPrefWidth(80.0);
         animeSeasonCol.setPrefWidth(100.0);
 
-        animeStatusCol.setCellFactory(col -> new TableCell<>() {
-            private static final Map<AnimeStatus, PseudoClass> statusPseudoClasses = Map.of(
-                    AnimeStatus.AIRING, PseudoClass.getPseudoClass("airing"),
-                    AnimeStatus.COMPLETED, PseudoClass.getPseudoClass("completed"),
-                    AnimeStatus.UNKNOWN, PseudoClass.getPseudoClass("unknown"),
-                    AnimeStatus.CANCELLED, PseudoClass.getPseudoClass("cancelled"),
-                    AnimeStatus.HIATUS, PseudoClass.getPseudoClass("hiatus"),
-                    AnimeStatus.NOT_RELEASED, PseudoClass.getPseudoClass("not-released")
-            );
-            private final Region rect = new Region();
-
-            {
-                rect.getStyleClass().add("anime-status-display");
-            }
-
-            @Override
-            protected void updateItem(AnimeStatus item, boolean empty) {
-                super.updateItem(item, empty);
-                statusPseudoClasses.values().forEach(pseudoClass ->
-                        rect.pseudoClassStateChanged(pseudoClass, false));
-                if (item != null && !empty) {
-                    setGraphic(rect);
-                    rect.pseudoClassStateChanged(statusPseudoClasses.get(item), true);
-                } else {
-                    setGraphic(null);
-                }
-            }
-        });
+        animeStatusCol.setCellFactory(getAnimeStatusCellFactory());
 
         userStatusCol.setCellFactory(col -> new TableCell<>() {
             private static final PseudoClass
@@ -351,6 +337,14 @@ public class MainWindowController {
         animeListPane.toFront();
     }
 
+    public void selectSearch() {
+        searchPane.toFront();
+    }
+
+    public void doSearch() {
+        // do search
+    }
+
     public void openSettings(ActionEvent evt) {
         if (configStage == null) {
             try {
@@ -382,7 +376,7 @@ public class MainWindowController {
     public void tryToSaveAnimeList(Path animeListFile) {
         if(animeListFile == null)   return;
         try {
-            UserAnimeList.write(animeList, animeListFile);
+            UserAnimeList.write(provider, animeList, animeListFile);
         } catch (IOException ex) {
             if(showIOExceptionDialog(ex, "An exception occurred", "Error saving anime list file at '" + animeListFile.toAbsolutePath() + "'")) {
                 var newAnimeListFile = saveFileChooserSimple(getWindow(),
@@ -396,7 +390,7 @@ public class MainWindowController {
     public void tryToSaveConfig(Path configFile) {
         if(configFile == null)  return;
         try {
-            Config.write(userConfig, configFile);
+            Config.write(provider, userConfig, configFile);
         } catch (IOException ex) {
             if(showIOExceptionDialog(ex, "An exception occurred", "Error saving config file at '" + configFile.toAbsolutePath() + "'")) {
                 var newConfigFile = saveFileChooserSimple(getWindow(),
@@ -444,5 +438,36 @@ public class MainWindowController {
 
     public Main getApplicationInstance() {
         return app;
+    }
+
+    private static <T> Callback<TableColumn<T, AnimeStatus>, TableCell<T, AnimeStatus>> getAnimeStatusCellFactory() {
+        return ignore -> new TableCell<>() {
+            private static final Map<AnimeStatus, PseudoClass> statusPseudoClasses = Map.of(
+                    AnimeStatus.AIRING, PseudoClass.getPseudoClass("airing"),
+                    AnimeStatus.COMPLETED, PseudoClass.getPseudoClass("completed"),
+                    AnimeStatus.UNKNOWN, PseudoClass.getPseudoClass("unknown"),
+                    AnimeStatus.CANCELLED, PseudoClass.getPseudoClass("cancelled"),
+                    AnimeStatus.HIATUS, PseudoClass.getPseudoClass("hiatus"),
+                    AnimeStatus.NOT_RELEASED, PseudoClass.getPseudoClass("not-released")
+            );
+            private final Region rect = new Region();
+
+            {
+                rect.getStyleClass().add("anime-status-display");
+            }
+
+            @Override
+            protected void updateItem(AnimeStatus item, boolean empty) {
+                super.updateItem(item, empty);
+                statusPseudoClasses.values().forEach(pseudoClass ->
+                        rect.pseudoClassStateChanged(pseudoClass, false));
+                if (item != null && !empty) {
+                    setGraphic(rect);
+                    rect.pseudoClassStateChanged(statusPseudoClasses.get(item), true);
+                } else {
+                    setGraphic(null);
+                }
+            }
+        };
     }
 }

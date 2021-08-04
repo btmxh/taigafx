@@ -45,3 +45,15 @@
     -fx-background-insets: 0;
     -fx-padding: 0;
 }
+
+.invis-table-column-header {
+    -fx-pref-height: 0;
+}
+
+.left-aligned-table-column-header .label {
+    -fx-alignment: CENTER_LEFT;
+}
+
+.right-aligned-table-column-header .label {
+    -fx-alignment: CENTER_RIGHT;
+}

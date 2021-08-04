@@ -1,8 +1,6 @@
 package com.dah.taigafx.animelist;
 
-import com.dah.taigafx.Json;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.dah.taigafx.Provider;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.jetbrains.annotations.NotNull;
@@ -39,11 +37,13 @@ public class UserAnimeList {
         this.animes = FXCollections.observableArrayList(animes);
     }
 
-    public static UserAnimeList read(Path file) throws IOException {
-        return Json.getObjectMapper().readValue(file.toFile(), UserAnimeList.class);
+    public static UserAnimeList read(@NotNull Provider provider, @NotNull Path file) throws IOException {
+        return provider.getObjectMapper().readValue(file.toFile(), UserAnimeList.class);
     }
 
-    public static void write(UserAnimeList animeList, Path file) throws IOException {
-        Json.getObjectMapper().writeValue(file.toFile(), animeList);
+    public static void write(@NotNull Provider provider,
+                             @NotNull UserAnimeList animeList,
+                             @NotNull Path file) throws IOException {
+        provider.getObjectMapper().writeValue(file.toFile(), animeList);
     }
 }
