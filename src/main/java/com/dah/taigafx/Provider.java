@@ -1,10 +1,10 @@
 package com.dah.taigafx;
 
-import com.dah.taigafx.anime.AnimeSource;
-import com.dah.taigafx.anime.loaders.AniListLoader;
-import com.dah.taigafx.anime.loaders.AnimeLoader;
-import com.dah.taigafx.anime.loaders.AodLoader;
-import com.dah.taigafx.anime.loaders.JikanLoader;
+import com.dah.taigafx.data.anime.AnimeSource;
+import com.dah.taigafx.api.AniListLoader;
+import com.dah.taigafx.api.AnimeLoader;
+import com.dah.taigafx.api.AodLoader;
+import com.dah.taigafx.api.JikanLoader;
 import com.dah.taigafx.config.Config;
 import com.dah.taigafx.utils.BindingUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;

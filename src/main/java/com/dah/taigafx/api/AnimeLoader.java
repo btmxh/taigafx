@@ -1,6 +1,7 @@
-package com.dah.taigafx.anime.loaders;
+package com.dah.taigafx.api;
 
-import com.dah.taigafx.anime.Anime;
+import com.dah.taigafx.data.SearchResult;
+import com.dah.taigafx.data.anime.Anime;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;

@@ -1,12 +1,12 @@
-package com.dah.taigafx.anime.loaders;
+package com.dah.taigafx.api;
 
 import com.dah.taigafx.Provider;
-import com.dah.taigafx.anime.*;
+import com.dah.taigafx.data.SearchResult;
+import com.dah.taigafx.data.anime.*;
 import com.dah.taigafx.exceptions.APIRequestException;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

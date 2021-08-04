@@ -1,4 +1,4 @@
-package com.dah.taigafx.anime.loaders;
+package com.dah.taigafx.api;
 
 import com.dah.taigafx.Provider;
 import com.fasterxml.jackson.databind.ObjectMapper;

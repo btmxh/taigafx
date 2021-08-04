@@ -1,7 +1,8 @@
-package com.dah.taigafx.anime.loaders;
+package com.dah.taigafx.api;
 
 import com.dah.taigafx.Provider;
-import com.dah.taigafx.anime.*;
+import com.dah.taigafx.data.SearchResult;
+import com.dah.taigafx.data.anime.*;
 import com.dah.taigafx.exceptions.APIRequestException;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,9 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.net.URI;
 import java.net.URLEncoder;
-import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.*;

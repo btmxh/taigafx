@@ -1,4 +1,4 @@
-package com.dah.taigafx.anime;
+package com.dah.taigafx.data.anime;
 
 import org.jetbrains.annotations.NotNull;
 

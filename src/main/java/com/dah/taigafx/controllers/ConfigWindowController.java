@@ -1,8 +1,8 @@
 package com.dah.taigafx.controllers;
 
-import com.dah.taigafx.anime.AnimeSource;
-import com.dah.taigafx.anime.IdMappingMethod;
-import com.dah.taigafx.animelist.AnimeListService;
+import com.dah.taigafx.data.anime.AnimeSource;
+import com.dah.taigafx.data.anime.IdMappingMethod;
+import com.dah.taigafx.data.animelist.AnimeListService;
 import com.dah.taigafx.config.AnimeListConfig;
 import com.dah.taigafx.config.Config;
 import com.dah.taigafx.utils.BindingUtils;

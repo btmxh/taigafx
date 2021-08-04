@@ -1,6 +1,6 @@
-package com.dah.taigafx.animelist;
+package com.dah.taigafx.data.animelist;
 
-import com.dah.taigafx.anime.Anime;
+import com.dah.taigafx.data.anime.Anime;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -10,7 +10,6 @@ import org.jetbrains.annotations.Nullable;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.List;
 
 public class UserAnime {
     @SuppressWarnings("NotNullFieldNotInitialized")

@@ -1,4 +1,4 @@
-package com.dah.taigafx.animelist;
+package com.dah.taigafx.data.animelist;
 
 public enum UserAnimeStatus {
     WATCHING,

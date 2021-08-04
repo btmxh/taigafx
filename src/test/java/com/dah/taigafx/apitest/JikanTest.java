@@ -1,16 +1,14 @@
 package com.dah.taigafx.apitest;
 
 import com.dah.taigafx.Provider;
-import com.dah.taigafx.anime.AnimeSeason;
-import com.dah.taigafx.anime.loaders.AniListLoader;
-import com.dah.taigafx.anime.loaders.AnimeLoader;
-import com.dah.taigafx.anime.loaders.JikanLoader;
+import com.dah.taigafx.data.anime.AnimeSeason;
+import com.dah.taigafx.api.AnimeLoader;
+import com.dah.taigafx.api.JikanLoader;
 import com.dah.taigafx.config.Config;
 import com.dah.taigafx.exceptions.APIRequestException;
 import org.junit.jupiter.api.Test;
 
 import java.net.http.HttpTimeoutException;
-import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
