@@ -11,10 +11,13 @@ import com.dah.taigafx.data.animelist.UserAnimeList;
 import com.dah.taigafx.data.animelist.UserAnimeStatus;
 import com.dah.taigafx.config.Config;
 import com.jfoenix.controls.JFXButton;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -39,6 +42,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Callback;
+import org.controlsfx.control.MaskerPane;
 import org.controlsfx.control.SegmentedBar;
 import org.controlsfx.dialog.ExceptionDialog;
 import org.jetbrains.annotations.NotNull;
@@ -68,6 +72,9 @@ public class MainWindowController {
     public TableColumn<Anime, Integer> searchTableAnimeEpisodesCol;
     public TableColumn<Anime, Double> searchTableAnimeScoreCol;
     public TableColumn<Anime, AnimeSeason.WithYear> searchTableAnimeSeasonCol;
+    public MaskerPane searchMaskPane;
+    public Button searchButton;
+    public FontAwesomeIconView searchButtonIcon;
 
     // Settings
     private ConfigWindowController configController;
@@ -81,6 +88,8 @@ public class MainWindowController {
     private Main app;
 
     private Provider provider;
+    private Task<Void> searchTask;
+    private final SimpleBooleanProperty searchTaskRunning = new SimpleBooleanProperty();
 
     @FXML
     public void initialize() {
@@ -134,6 +143,12 @@ public class MainWindowController {
                 new ReadOnlyObjectWrapper<>(data.getValue().score()));
         searchTableAnimeSeasonCol.setCellValueFactory(data ->
                 new ReadOnlyObjectWrapper<>(data.getValue().seasonWithYear()));
+
+        searchMaskPane.visibleProperty().bind(searchTaskRunning);
+        searchTaskRunning.addListener((obs, old, newValue) -> {
+            searchButtonIcon.setIcon(newValue? FontAwesomeIcon.TIMES : FontAwesomeIcon.SEARCH);
+            searchButton.setOnAction(newValue? e -> cancelSearch() : e -> doSearch());
+        });
     }
 
     private void initAnimePane(@NotNull AnchorPane pane, @Nullable UserAnimeStatus status) {
@@ -337,15 +352,11 @@ public class MainWindowController {
         searchPane.toFront();
     }
 
-    private Task<Void> previousSearchTask;
-
     public void doSearch() {
         var query = animeSearchQueryTextField.getText();
         var itr = provider.getAnimeLoader().searchAnimeAsIterator(query);
         searchTable.getItems().clear();
-        if(previousSearchTask != null && !previousSearchTask.isCancelled()) {
-            previousSearchTask.cancel();
-        }
+        cancelSearch();
 
         var searchTask = new Task<Void>() {
             @Override
@@ -363,8 +374,17 @@ public class MainWindowController {
             }
         };
 
-        previousSearchTask = searchTask;
+        this.searchTask = searchTask;
+        searchTaskRunning.set(true);
+        searchTask.setOnSucceeded(evt -> searchTaskRunning.set(false));
         new Thread(searchTask).start();
+    }
+
+    private void cancelSearch() {
+        if(searchTaskRunning.get() && searchTask != null) {
+            searchTask.cancel();
+            searchTaskRunning.set(false);
+        }
     }
 
     public void openSettings(ActionEvent evt) {

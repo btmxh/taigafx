@@ -2,6 +2,7 @@
 
 <?import com.jfoenix.controls.JFXButton?>
 <?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
+<?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
@@ -11,6 +12,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
+<?import org.controlsfx.control.MaskerPane?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1080.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.dah.taigafx.controllers.MainWindowController">
    <children>
@@ -100,7 +102,11 @@
                 <TableColumn prefWidth="-1.0" styleClass="left-aligned-table-column-header" text="  Anime Title">
                      <columns>
                       <TableColumn fx:id="searchTableAnimeStatusCol" prefWidth="20.0" styleClass="invis-table-column-header" />
-                        <TableColumn fx:id="searchTableAnimeTitleCol" prefWidth="630.0" styleClass="invis-table-column-header" />
+                        <TableColumn fx:id="searchTableAnimeTitleCol" prefWidth="630.0">
+                           <styleClass>
+                              <String fx:value="invis-table-column-header" />
+                              <String fx:value="left-aligned-table-column-header" />
+                           </styleClass></TableColumn>
                      </columns>
                   </TableColumn>
                   <TableColumn fx:id="searchTableAnimeTypeCol" prefWidth="75.0" text="Type" />
@@ -109,9 +115,9 @@
                   <TableColumn fx:id="searchTableAnimeSeasonCol" prefWidth="126.0" styleClass="right-aligned-table-column-header" text="Season  " />
               </columns>
             </TableView>
-            <JFXButton layoutX="986.0" layoutY="5.0" onAction="#doSearch">
+            <JFXButton fx:id="searchButton" layoutX="986.0" layoutY="5.0" onAction="#doSearch">
                <graphic>
-                  <FontAwesomeIconView fill="WHITE" glyphName="SEARCH">
+                  <FontAwesomeIconView fx:id="searchButtonIcon" fill="WHITE" glyphName="SEARCH">
                      <font>
                         <Font size="14.0" />
                      </font>
@@ -121,6 +127,7 @@
                   <Insets bottom="4.0" left="4.0" right="4.0" top="2.0" />
                </padding>
             </JFXButton>
+            <MaskerPane fx:id="searchMaskPane" layoutX="151.0" layoutY="-36.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="32.0" />
          </children>
       </AnchorPane>
    </children>
