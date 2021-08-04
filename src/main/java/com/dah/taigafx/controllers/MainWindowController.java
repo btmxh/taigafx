@@ -1,5 +1,6 @@
 package com.dah.taigafx.controllers;
 
+import com.dah.taigafx.Main;
 import com.dah.taigafx.anime.AnimeSeason;
 import com.dah.taigafx.anime.AnimeStatus;
 import com.dah.taigafx.anime.AnimeType;
@@ -71,6 +72,7 @@ public class MainWindowController {
             = new EnumMap<>(UserAnimeStatus.class);
     private UserAnimeList animeList;
     private Config userConfig;
+    private Main app;
 
     @FXML
     public void initialize() {
@@ -353,16 +355,17 @@ public class MainWindowController {
         if (configStage == null) {
             try {
                 var loader = new FXMLLoader(MainWindowController.class.getResource("/config/ConfigWindow.fxml"));
+                var eventSource = (Node) evt.getSource();
                 configPane = loader.load();
                 configController = loader.getController();
                 configController.setMainController(this);
                 configScene = new Scene(configPane);
+                configScene.getStylesheets().add(Objects.requireNonNull(MainWindowController.class.getResource("/common/common.css")).toExternalForm());
                 configStage = new Stage();
-                var eventSource = (Node) evt.getSource();
                 configStage.initOwner(eventSource.getScene().getWindow());
                 configStage.initModality(Modality.WINDOW_MODAL);
                 configStage.setScene(configScene);
-                configScene.getStylesheets().add(Objects.requireNonNull(MainWindowController.class.getResource("/common/common.css")).toExternalForm());
+                configStage.setTitle("Settings");
             } catch (IOException e) {
                 new ExceptionDialog(e).showAndWait();
                 return;
@@ -429,5 +432,17 @@ public class MainWindowController {
         }
         var file = chooser.showSaveDialog(owner);
         return file == null? null : file.toPath();
+    }
+
+    public Config getConfig() {
+        return userConfig;
+    }
+
+    public void setApplicationInstance(Main app) {
+        this.app = app;
+    }
+
+    public Main getApplicationInstance() {
+        return app;
     }
 }

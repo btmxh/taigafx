@@ -35,3 +35,13 @@
 .content-tabbed-pane {
     -fx-background-color: #474747
 }
+
+.invis-list-view {
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.invis-scroll-pane {
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}

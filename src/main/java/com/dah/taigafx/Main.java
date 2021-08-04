@@ -15,6 +15,7 @@ public class Main extends Application {
         var loader = new FXMLLoader(Objects.requireNonNull(Main.class.getResource("/mainWindow/MainWindow.fxml")));
         Parent parent = loader.load();
         MainWindowController controller = loader.getController();
+        controller.setApplicationInstance(this);
 
         var scene = new Scene(parent);
         scene.getStylesheets().add(Objects.requireNonNull(Main.class.getResource("/common/common.css")).toExternalForm());

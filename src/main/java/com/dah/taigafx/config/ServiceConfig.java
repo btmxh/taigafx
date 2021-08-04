@@ -1,6 +1,8 @@
 package com.dah.taigafx.config;
 
 import com.dah.taigafx.anime.AnimeSource;
+import com.dah.taigafx.anime.IdMappingMethod;
+import com.dah.taigafx.animelist.AnimeListService;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -15,10 +17,12 @@ import java.util.List;
 public class ServiceConfig {
     private @NotNull final SimpleObjectProperty<@NotNull AnimeSource> metadataProvider
             = new SimpleObjectProperty<>(AnimeSource.ANILIST);
-    private @NotNull final SimpleObjectProperty<@Nullable AnimeSource> animeListService
-            = new SimpleObjectProperty<>(AnimeSource.ANILIST);
+    private @NotNull final SimpleObjectProperty<@Nullable AnimeListService> animeListService
+            = new SimpleObjectProperty<>(AnimeListService.ANILIST);
     private @NotNull final SimpleObjectProperty<@Nullable Path> aodExtrasDirectory
             = new SimpleObjectProperty<>(null);
+    private @NotNull final SimpleObjectProperty<@NotNull IdMappingMethod> idMappingMethod
+            = new SimpleObjectProperty<>(IdMappingMethod.SEARCH);
     private @NotNull final SimpleBooleanProperty
             autoSyncWhenListChange = new SimpleBooleanProperty(false),
             autoSyncOnStartup = new SimpleBooleanProperty(false),
@@ -41,15 +45,15 @@ public class ServiceConfig {
         this.metadataProvider.set(metadataProvider);
     }
 
-    public @Nullable AnimeSource getAnimeListService() {
+    public @Nullable AnimeListService getAnimeListService() {
         return animeListService.get();
     }
 
-    public @NotNull SimpleObjectProperty<@Nullable AnimeSource> animeListServiceProperty() {
+    public @NotNull SimpleObjectProperty<@Nullable AnimeListService> animeListServiceProperty() {
         return animeListService;
     }
 
-    public void setAnimeListService(@Nullable AnimeSource animeListService) {
+    public void setAnimeListService(@Nullable AnimeListService animeListService) {
         this.animeListService.set(animeListService);
     }
 
@@ -63,6 +67,18 @@ public class ServiceConfig {
 
     public void setAodExtrasDirectory(@Nullable Path aodExtrasDirectory) {
         this.aodExtrasDirectory.set(aodExtrasDirectory);
+    }
+
+    public @NotNull IdMappingMethod getIdMappingMethod() {
+        return idMappingMethod.get();
+    }
+
+    public @NotNull SimpleObjectProperty<@NotNull IdMappingMethod> idMappingMethodProperty() {
+        return idMappingMethod;
+    }
+
+    public void setIdMappingMethod(@NotNull IdMappingMethod idMappingMethod) {
+        this.idMappingMethod.set(idMappingMethod);
     }
 
     public boolean isAutoSyncWhenListChange() {
