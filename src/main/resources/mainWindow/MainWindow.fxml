@@ -90,7 +90,7 @@
          </children></AnchorPane>
       <AnchorPane fx:id="searchPane" prefHeight="200.0" prefWidth="200.0" styleClass="content-pane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="64.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <TextField layoutX="824.0" layoutY="3.0" prefHeight="24.0" prefWidth="260.0" promptText="Type to search here" AnchorPane.rightAnchor="31.0" AnchorPane.topAnchor="3.0">
+            <TextField fx:id="animeSearchQueryTextField" layoutX="824.0" layoutY="3.0" onAction="#doSearch" prefHeight="24.0" prefWidth="260.0" promptText="Type to search here" AnchorPane.rightAnchor="31.0" AnchorPane.topAnchor="3.0">
                <opaqueInsets>
                   <Insets bottom="-2.0" />
                </opaqueInsets>
@@ -109,19 +109,19 @@
                   <TableColumn fx:id="searchTableAnimeSeasonCol" prefWidth="126.0" styleClass="right-aligned-table-column-header" text="Season  " />
               </columns>
             </TableView>
+            <JFXButton layoutX="986.0" layoutY="5.0" onAction="#doSearch">
+               <graphic>
+                  <FontAwesomeIconView fill="WHITE" glyphName="SEARCH">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </FontAwesomeIconView>
+               </graphic>
+               <padding>
+                  <Insets bottom="4.0" left="4.0" right="4.0" top="2.0" />
+               </padding>
+            </JFXButton>
          </children>
       </AnchorPane>
-      <JFXButton layoutX="1050.0" layoutY="5.0" onAction="#doSearch">
-         <graphic>
-            <FontAwesomeIconView fill="WHITE" glyphName="SEARCH">
-               <font>
-                  <Font size="14.0" />
-               </font>
-            </FontAwesomeIconView>
-         </graphic>
-         <padding>
-            <Insets bottom="4.0" left="4.0" right="4.0" top="2.0" />
-         </padding>
-      </JFXButton>
    </children>
 </AnchorPane>

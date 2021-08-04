@@ -58,4 +58,8 @@ public class Provider {
     public @NotNull Duration getConnectionTimeout() {
         return Duration.ofMinutes(2);
     }
+
+    public AnimeLoader getAnimeLoader() {
+        return animeLoader.get();
+    }
 }

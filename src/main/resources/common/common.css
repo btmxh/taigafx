@@ -50,10 +50,18 @@
     -fx-pref-height: 0;
 }
 
-.left-aligned-table-column-header .label {
+.table-column {
+    -fx-alignment: CENTER;
+}
+
+.left-aligned-table-column-header .label,
+.left-aligned-table-column-header
+{
     -fx-alignment: CENTER_LEFT;
 }
 
-.right-aligned-table-column-header .label {
+.right-aligned-table-column-header .label,
+.right-aligned-table-column-header
+{
     -fx-alignment: CENTER_RIGHT;
 }

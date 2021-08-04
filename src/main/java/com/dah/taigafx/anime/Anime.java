@@ -29,4 +29,8 @@ public record Anime(
         @NotNull List<String> genres,
         @NotNull List<LocalDateTime> schedule   // release datetime for every episodes
                                                 // Note: this is the time when the episode finished airing
-) {}
+) {
+    public AnimeSeason.WithYear seasonWithYear() {
+        return new AnimeSeason.WithYear(season, seasonYear);
+    }
+}

@@ -11,11 +11,13 @@ import com.dah.taigafx.animelist.UserAnimeList;
 import com.dah.taigafx.animelist.UserAnimeStatus;
 import com.dah.taigafx.config.Config;
 import com.jfoenix.controls.JFXButton;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -43,7 +45,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.Map;
@@ -59,18 +60,18 @@ public class MainWindowController {
     public AnchorPane ptwPane;
 
     public AnchorPane searchPane;
+    public TextField animeSearchQueryTextField;
     public TableView<Anime> searchTable;
     public TableColumn<Anime, AnimeStatus> searchTableAnimeStatusCol;
     public TableColumn<Anime, String> searchTableAnimeTitleCol;
     public TableColumn<Anime, AnimeType> searchTableAnimeTypeCol;
     public TableColumn<Anime, Integer> searchTableAnimeEpisodesCol;
     public TableColumn<Anime, Double> searchTableAnimeScoreCol;
-    public TableColumn<Anime, AnimeSeason> searchTableAnimeSeasonCol;
+    public TableColumn<Anime, AnimeSeason.WithYear> searchTableAnimeSeasonCol;
 
     // Settings
     private ConfigWindowController configController;
     private AnchorPane configPane;
-    private Scene configScene;
     private Stage configStage;
 
     private final EnumMap<UserAnimeStatus, ObservableList<UserAnime>> filteredAnimeLists
@@ -132,7 +133,7 @@ public class MainWindowController {
         searchTableAnimeScoreCol.setCellValueFactory(data ->
                 new ReadOnlyObjectWrapper<>(data.getValue().score()));
         searchTableAnimeSeasonCol.setCellValueFactory(data ->
-                new ReadOnlyObjectWrapper<>(data.getValue().season()));
+                new ReadOnlyObjectWrapper<>(data.getValue().seasonWithYear()));
     }
 
     private void initAnimePane(@NotNull AnchorPane pane, @Nullable UserAnimeStatus status) {
@@ -328,11 +329,6 @@ public class MainWindowController {
         AnchorPane.setTopAnchor(table, 0.0);
     }
 
-    private void addAnimeToList(UserAnime anime) {
-        animeList.getAnimes().add(anime);
-        filteredAnimeLists.get(anime.getStatus()).add(anime);
-    }
-
     public void selectAnimeList() {
         animeListPane.toFront();
     }
@@ -341,8 +337,34 @@ public class MainWindowController {
         searchPane.toFront();
     }
 
+    private Task<Void> previousSearchTask;
+
     public void doSearch() {
-        // do search
+        var query = animeSearchQueryTextField.getText();
+        var itr = provider.getAnimeLoader().searchAnimeAsIterator(query);
+        searchTable.getItems().clear();
+        if(previousSearchTask != null && !previousSearchTask.isCancelled()) {
+            previousSearchTask.cancel();
+        }
+
+        var searchTask = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                while (itr.hasNext()) {
+                    if(isCancelled()) {
+                        return null;
+                    }
+                    var result = itr.next().get();
+                    if(result != null && !isCancelled()) {
+                        Platform.runLater(() -> searchTable.getItems().addAll(result.animes()));
+                    }
+                }
+                return null;
+            }
+        };
+
+        previousSearchTask = searchTask;
+        new Thread(searchTask).start();
     }
 
     public void openSettings(ActionEvent evt) {
@@ -353,7 +375,7 @@ public class MainWindowController {
                 configPane = loader.load();
                 configController = loader.getController();
                 configController.setMainController(this);
-                configScene = new Scene(configPane);
+                Scene configScene = new Scene(configPane);
                 configScene.getStylesheets().add(Objects.requireNonNull(MainWindowController.class.getResource("/common/common.css")).toExternalForm());
                 configStage = new Stage();
                 configStage.initOwner(eventSource.getScene().getWindow());
@@ -368,7 +390,7 @@ public class MainWindowController {
         configStage.showAndWait();
     }
 
-    public void windowClosed(Window window) {
+    public void windowClosed() {
         tryToSaveAnimeList(Path.of("animelist.json"));
         tryToSaveConfig(Path.of("config.json"));
     }

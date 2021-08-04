@@ -23,7 +23,7 @@ public class Main extends Application {
         primaryStage.setScene(scene);
 
         primaryStage.setTitle("TaigaFX v0.1.0");
-        primaryStage.setOnCloseRequest(evt -> controller.windowClosed(primaryStage));
+        primaryStage.setOnCloseRequest(evt -> controller.windowClosed());
         primaryStage.show();
     }
 
